@@ -91,50 +91,61 @@ The basic syntax is meant to be something along these lines:
     URL          ::= anything other than @}
 
 
-Examples
---------
+Example
+-------
 
-I'll put some examples here while I wait for a better idea of where to put
-them. (Like a tests directory for the code, perhaps?)
+I'll put an example here while I wait for a better place to put it.
 
-These are mostly meant for my own memory, and not public consumption.
+This is mostly meant for my own memory, and not public consumption.
 
-    {# a #}
-    {# b 
-      {# subnumber
-        {- not a number -}#}
-      {# subnumber #}#}
-    {# c #}
-    
-    {- a -}
-    {- b -}
-    {- c
-     cont -}
-    
-    {^ footnote text ^}
-    
-    {{ code }}
-    
+    {. BraceML .}
+
+    A convenient markup language {^ like {[ html ]} ^} for simple articles.
+
+    Includes more than one paragraph! {^ We can even handle multiple
+    paragraphs in these footnotes!
+
+    Are you not impressed? ^}
+
+
+    {.. Todo ..}
+
+    {# Fix stuff
+
+        {# Start by doing the thing #}
+
+        {# Then try the other thing #} #}
+
+    {# This will take two paragraphs.
+
+       In no particular order you should
+
+        {- Something else -}
+
+        {- Yet more things -} #}
+
+
+    The {{ inline code }} should be easy to put in.
+
     {{
-    pre code
+    Also applies to code blocks!
+
+    Which, importantly, must have nice html generated for them.
     }}
-    
+
+    If you want to quote {@ someone
+    | http://en.wikipedia.org/wiki/Weasel_words @} and the "quote is too
+    large" to do inline, you can always resort to
+
     {"
-    blockquote
+    Block quoting them across the page!!
     "}
     
-    {@ title | href @}
-    {! alt text | url !}
+    You may want to {= insert =} (tricky terminology gets <dfn>-ed!) images:
+
+    {! Images should have an alt text | image.jpg !}
     
-    {/ em /}
-    
-    {** strong **}
-    
-    {[ abbr ]}
+    At this point, {/ you /} may think I'm {** crazy **} but that's just
+    different degrees of emphasis.
     
     
-    {. en huvudrubrik .}
-    
-    {.. underrubrik ..}
-    
-    {... tredje nivån ...}
