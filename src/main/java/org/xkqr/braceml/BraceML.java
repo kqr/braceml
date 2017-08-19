@@ -1,7 +1,11 @@
 package org.xkqr.braceml;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,58 +16,30 @@ import org.xkqr.braceml.tokens.EOF;
 
 
 public class BraceML {
-/*
- * GRAMMAR (terminals are tokens)
- * ==============================
- *   DOCUMENT     ::= SECTION DOCUMENT | e
- *   SECTION      ::= HEADING CONTENTS
- *   HEADING      ::= H | HH | HHH
- *   CONTENTS     ::= HEADING CONTENTS | BLOCK CONTENTS | e
- *   BLOCK        ::= PARAGRAPH pgbreak | openblock 
- *     PARAGRAPH  ::= INLINE PARAGRAPH | e
- *     ULI        ::=
- *     OLI        ::=
- *     CODEBLOCK  ::= openblock VERBATIM closeblock
- *     QUOTE      ::=
- *
- * TOKENS (whitespace ignored unless otherwise specified)
- * ======================================================
- *   pgbreak    = \n \n
- *   openblock  = {{ \n
- *   closeblock = \n }}
- 
- * INLINE ::= EMPH | HREF | STRONG | ABBR | DFN | CODE | FOOTNOTE | REGULAR
- *
- ** EMPH       ::= {/ INLINE /}
- ** STRONG     ::= {** INLINE **}
- ** HREF       ::= {@ INLINE | URL @}
- ** CODE       ::= {{ VERBATIM }}
- ** ABBR       ::= {[ INLINE ]}
- ** DFN        ::= {= INLINE =}
- ** FOOTNOTE   ::= {^ DOCUMENT ^}
- ** 
- *
- * VERBATIM   ::= anything other than }}
- * URL        ::= anything other than @}
- *
- * REGULAR    ::= anything
- */
 
     public static void main(String[] args) throws IOException {
-        System.out.println("Hello, world!");
-        // TODO: lex
         // TODO: parse
-        // TODO: generate
         Map<String, Token> reserved = new HashMap<>();
         
-        Lexer lexer = new Lexer(new File(args[0]), reserved);
-        Token t;
-        while (true) {
-            t = lexer.token();
-            System.out.println(t);
-        }
+//        Reader source = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]))));
+//        Lexer lexer = new Lexer(source, reserved);
+//        Token t;
+//        while (true) {
+//            t = lexer.token();
+//            System.out.println(t);
+//        }
         
         //System.out.println("");
+
+        Renderer r = new Html();
+        r.h().regular("Hello");
+        Renderer p = r.paragraph();
+        p.regular("World, I ");
+        p.strong().regular("really");
+        p.regular(" wish to greet ");
+        p.href("127.0.0.1").regular("you");
+        p.regular(" welcome");
+        System.out.println(r.render());
     }
     
 

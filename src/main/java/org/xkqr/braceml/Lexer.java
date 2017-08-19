@@ -18,9 +18,8 @@ public class Lexer implements AutoCloseable {
     private Token next;
     private Map<String, Token> reserved;
 
-    public Lexer(File fp, Map<String, Token> reserved) throws IOException {
-        this.source = new BufferedReader(new InputStreamReader(
-            new FileInputStream(fp)));
+    public Lexer(Reader source, Map<String, Token> reserved) throws IOException {
+        this.source = source;
         this.reserved = reserved;
     }
 
