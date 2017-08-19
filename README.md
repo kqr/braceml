@@ -10,12 +10,11 @@ something along these lines:
          "A document is a sequence of block elements"
   
     BLOCK        ::= BLOCKTAG | PARAGRAPH
-         "A block element starts with a block tag, xor is a paragraph"
+         "If the block does not start with a block tag, it must be a paragraph"
   
   
     BLOCKTAG     ::= H | HH | HHH | ULI | OLI | CODEBLOCK | QUOTE | IMG
-         "A block tag is either a heading with a level, a list item,
-          a code block, a blockquote or an image"
+         "A block tag is one of these things (H = heading, ULI = UL + LI)"
   
     H            ::= {. INLINE .}
     HH           ::= {.. INLINE ..}

@@ -8,11 +8,11 @@ public class Html implements Renderer<LazyStringBuilder> {
     public Html() {
         this.content = new LazyStringBuilder();
         this.footer = new LazyStringBuilder();
-        this.currentActive = ActiveTag.NONE;
+        this.currentOpenList = OpenList.NONE;
     }
 
     public LazyStringBuilder render() {
-        this.close(currentActive);
+        this.close(currentOpenList);
         return this.content.append(footer);
     }
 
@@ -26,10 +26,10 @@ public class Html implements Renderer<LazyStringBuilder> {
         return node("h3");
     }
     public Renderer<LazyStringBuilder> uli() {
-        return li(ActiveTag.UL);
+        return li(OpenList.UL);
     }
     public Renderer<LazyStringBuilder> oli() {
-        return li(ActiveTag.OL);
+        return li(OpenList.OL);
     }
     public Renderer<LazyStringBuilder> quote() {
         return node("blockquote");
@@ -63,7 +63,7 @@ public class Html implements Renderer<LazyStringBuilder> {
     }
 
     public Renderer<LazyStringBuilder> href(String url) {
-        this.close(currentActive);
+        this.close(currentOpenList);
         LazyStringBuilder contents = new LazyStringBuilder();
         this.content.append("<a href=\"" + url + "\">")
             .append(contents)
@@ -82,28 +82,28 @@ public class Html implements Renderer<LazyStringBuilder> {
         renderer.regular(verbatim);
     }
     public void regular(String verbatim) {
-        this.close(currentActive);
+        this.close(currentOpenList);
         this.content.append(verbatim);
     }
 
     /*================ PRIVATE ================*/
 
     
-    private enum ActiveTag {UL, OL, NONE};
+    private enum OpenList {UL, OL, NONE};
 
     private LazyStringBuilder content;
     private LazyStringBuilder footer;
-    private ActiveTag currentActive;
+    private OpenList currentOpenList;
 
     private Html(LazyStringBuilder content) {
         // TODO: call the other constructor?
         this.content = content;
         this.footer = new LazyStringBuilder();
-        this.currentActive = ActiveTag.NONE;
+        this.currentOpenList = OpenList.NONE;
     }
 
-    private Renderer<LazyStringBuilder> li(ActiveTag tag) {
-        this.open(tag);
+    private Renderer<LazyStringBuilder> li(OpenList type) {
+        this.open(type);
         return node("li");
     }
 
@@ -112,7 +112,7 @@ public class Html implements Renderer<LazyStringBuilder> {
     }
 
     private Renderer<LazyStringBuilder> node(String name, LazyStringBuilder into) {
-        this.close(currentActive);
+        this.close(currentOpenList);
         LazyStringBuilder contents = new LazyStringBuilder();
         into.append("<" + name + ">")
             .append(contents)
@@ -120,8 +120,8 @@ public class Html implements Renderer<LazyStringBuilder> {
         return new Html(contents);
     }
     
-    private void close(ActiveTag tag) {
-        switch (tag) {
+    private void close(OpenList type) {
+        switch (type) {
         case NONE:
             break;
         case UL:
@@ -133,14 +133,14 @@ public class Html implements Renderer<LazyStringBuilder> {
         default:
             // TODO: Handle this case. Should be logged but otherwise ignored.
         }
-        currentActive = ActiveTag.NONE;
+        currentOpenList = OpenList.NONE;
     }
 
-    private void open(ActiveTag tag) {
-        if (currentActive != ActiveTag.NONE && currentActive != tag) {
-            close(currentActive);
+    private void open(OpenList type) {
+        if (currentOpenList != OpenList.NONE && currentOpenList != type) {
+            close(currentOpenList);
         }
-        switch (tag) {
+        switch (type) {
         case UL:
             content.append("<ul>");
             break;
@@ -150,6 +150,6 @@ public class Html implements Renderer<LazyStringBuilder> {
         default:
             // TODO: Handle this case. Should be logged but otherwise ignored.
         }
-        currentActive = tag;
+        currentOpenList = type;
     }
 }
