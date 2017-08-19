@@ -9,6 +9,12 @@ public interface Renderer<Output> {
      *
      */
     public Renderer<Output> h();
+    /*
+     * We could imagine having a "public void h(String verbatim)" version
+     * of this method (and all like it) for convenience when manually
+     * writing code to render a document. That's not a priority though.
+     *
+     */
     public Renderer<Output> hh();
     public Renderer<Output> hhh();
     public Renderer<Output> uli();

@@ -83,6 +83,7 @@ public class Html implements Renderer<LazyStringBuilder> {
     }
     public void regular(String verbatim) {
         this.close(currentOpenList);
+        // TODO: ESCAPE &<> CHARACTERS!!!
         this.content.append(verbatim);
     }
 
