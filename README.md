@@ -2,8 +2,39 @@
 BraceML
 =======
 
-A markup language for my blog posts. The basic syntax is meant to be
-something along these lines:
+A convenient markup language for simple articles. No, I don't think markdown
+is quite good enough.
+
+
+Todo
+----
+
+1. Finish lexer
+
+    1. Add all token types
+    2. Complete implementation of more complex tokens
+    3. Create map of "reserved keywords"
+
+2. Create parser
+
+    1. Recursive descent based on specification below.
+    2. Make calls to renderer.
+
+3. Finish plumbing
+
+    1. Read from stdin, barf rendered to stdout?
+
+4. Document
+
+    1. Write comments
+    2. Make tests
+    3. Blog articles?
+
+
+Specification
+-------------
+
+The basic syntax is meant to be something along these lines:
 
 
     DOCUMENT     ::= BLOCK DOCUMENT | e
