@@ -14,33 +14,23 @@ import java.util.Map;
 
 public class BraceML {
 
-    public static void main(String[] args) throws IOException {
-        // TODO: parse
-        
+    public static void main(String[] args) throws IOException, ParseError {
         Reader source = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]))));
+        Parser<LazyStringBuilder> parse = new Parser(new Lexer(source), new Html());
+        parse.document();
+        System.out.println(html.render());
+    }
+
+    public void lexerdump(Reader source) {
         Lexer lexer = new Lexer(source);
         Token t;
         while (true) {
             t = lexer.next();
             System.out.println(t);
-            if (t.is(Token.Type.EOF)) {
+            if (t.type() == Token.Type.EOF) {
                 break;
             }
         }
-        
-        //System.out.println("");
-
-/*
-        Renderer r = new Html();
-        r.h().regular("Hello");
-        Renderer p = r.paragraph();
-        p.regular("World, I ");
-        p.strong().regular("really");
-        p.regular(" wish to greet ");
-        p.href("127.0.0.1").regular("you");
-        p.regular(" welcome");
-        System.out.println(r.render());
-*/
     }
 
 }

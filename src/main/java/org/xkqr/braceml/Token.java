@@ -4,8 +4,8 @@ import java.util.Formatter;
 
 public class Token {
     public enum Type {
-        /* Single character tokens */
-        NEWLINE, PIPE, EOF,
+        /* Single thing tokens */
+        NEWLINE, PARABREAK, PIPE, EOF,
 
         /* Regular text-like tokens */
         REGULAR, HREF, VERBATIM,
@@ -42,8 +42,8 @@ public class Token {
         return this;
     }
 
-    public boolean is(Type type) {
-        return this.type == type;
+    public Type type() {
+        return this.type;
     }
 
     public String sourceRep() {

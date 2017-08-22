@@ -46,17 +46,28 @@ public class Lexer implements AutoCloseable {
     }
 
     public Token next() throws IOException {
+        if (this.next == null) {
+            return fetch();
+        }
+
+        Token current = this.next;
+        this.next = null;
+
+        if (current.type() == Token.Type.NEWLINE) {
+            this.line++;
+            this.column = 0;
+            this.next = fetch();
+            if (this.next.type() == Token.Type.NEWLINE) {
+                current = token(Token.Type.PARABREAK, "\\n\\n");
+            }
+        }
+
+        return current;
+    }
+
+    private Token fetch() throws IOException {
         StringBuilder scanned = new StringBuilder();
         int i;
-        if (this.next != null) {
-            if (this.next.is(Token.Type.NEWLINE)) {
-                this.line++;
-                this.column = 0;
-            }
-            Token current = this.next;
-            this.next = null;
-            return current;
-        }
 
         while ((i = this.source.read()) != -1) {
             char c = (char) i;
@@ -74,6 +85,7 @@ public class Lexer implements AutoCloseable {
                     return evaluate(scanned.toString());
                 }
             }
+
             scanned.append(c);
             if (this.reserved.containsKey(scanned.toString())) {
                 return evaluate(scanned.toString());
