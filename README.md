@@ -11,30 +11,69 @@ Todo
 
 1. Finish lexer
 
-    1. Add all token types
-    2. Complete implementation of more complex tokens
-    3. Create map of "reserved keywords"
+    1. [CHECK] Add all token types
+    2. [CHECK] Complete implementation of more complex tokens
+    3. [WIP] Create map of "reserved keywords"
 
 2. Create parser
 
-    1. Recursive descent based on specification below.
-    2. Make calls to renderer.
+    1. [WIP] Recursive descent based on specification below.
+    2. [WIP] Make calls to renderer.
 
 3. Finish plumbing
 
-    1. Read from stdin, barf rendered to stdout?
+    1. [ ] Read from stdin, barf rendered to stdout?
 
 4. Document
 
-    1. Write comments
-    2. Make tests
-    3. Blog articles?
+    1. [ ] Write comments
+    2. [ ] Make tests
+    3. [ ] Blog articles?
+
+
+### Concepts completely handled
+
+* Heading 1
+* Paragraphs
+* Emphasis
+* Regular text
+
+
+### Concepts handled by everything but lexer
+
+* Heading 2
+* Heading 3
+* ULI
+* OLI
+* Blockquote
+* Strong
+* Abbreviation
+* Definition
+
+
+### Concepts handled by parser only
+
+* Footnote
+
+
+### Concepts handled by documentbuilder only
+
+* Href
+* Code block
+* Inline code
+
+
+### Concepts that aren't supported anywhere yet
+
+* Images
 
 
 Specification
 -------------
 
-The basic syntax is meant to be something along these lines:
+The basic syntax is meant to be something along these lines. This
+sketch has some bugs. To see how it actually works, reading the
+code gives you accurate results.
 
 
     DOCUMENT     ::= BLOCK DOCUMENT | e
