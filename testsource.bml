@@ -1,1 +1,4 @@
-testar en källkodsfil
+{. rubrik .}
+
+testar {/ en /} källkodsfil
+med text på flera rader

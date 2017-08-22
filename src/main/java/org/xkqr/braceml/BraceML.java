@@ -11,26 +11,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.xkqr.braceml.tokens.Token;
-import org.xkqr.braceml.tokens.EOF;
-
 
 public class BraceML {
 
     public static void main(String[] args) throws IOException {
         // TODO: parse
-        Map<String, Token> reserved = new HashMap<>();
         
-//        Reader source = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]))));
-//        Lexer lexer = new Lexer(source, reserved);
-//        Token t;
-//        while (true) {
-//            t = lexer.token();
-//            System.out.println(t);
-//        }
+        Reader source = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]))));
+        Lexer lexer = new Lexer(source);
+        Token t;
+        while (true) {
+            t = lexer.next();
+            System.out.println(t);
+            if (t.is(Token.Type.EOF)) {
+                break;
+            }
+        }
         
         //System.out.println("");
 
+/*
         Renderer r = new Html();
         r.h().regular("Hello");
         Renderer p = r.paragraph();
@@ -40,8 +40,7 @@ public class BraceML {
         p.href("127.0.0.1").regular("you");
         p.regular(" welcome");
         System.out.println(r.render());
+*/
     }
-    
-
 
 }

@@ -9,54 +9,90 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-
-import org.xkqr.braceml.tokens.*;
 
 public class Lexer implements AutoCloseable {
     private Reader source;
     private Token next;
+    private int line;
+    private int column;
     private Map<String, Token> reserved;
 
-    public Lexer(Reader source, Map<String, Token> reserved) throws IOException {
+    public Lexer(Reader source) throws IOException {
         this.source = source;
-        this.reserved = reserved;
+        this.next = null;
+        this.line = 1;
+        this.column = 0;
+
+        List<Token> predef = new ArrayList<Token>();
+        predef.add(new Token(Token.Type.H_OPEN, "{."));
+        predef.add(new Token(Token.Type.H_CLOSE, ".}"));
+        predef.add(new Token(Token.Type.EMPH_OPEN, "{/"));
+        predef.add(new Token(Token.Type.EMPH_CLOSE, "/}"));
+
+        this.reserved = new HashMap<String, Token>();
+        for (Token token : predef) {
+            this.reserved.put(token.sourceRep(), token);
+        }
     }
 
     @Override
     public void close() throws IOException {
         this.source.close();
+        this.source = null;
+        this.line = 0;
+        this.column = 0;
     }
 
-    public Token token() throws IOException {
+    public Token next() throws IOException {
         StringBuilder scanned = new StringBuilder();
         int i;
-        while ((i = source.read()) != -1) {
-            char c = (char) i;
-            if (c == '\n') {
-                next = new Newline();
+        if (this.next != null) {
+            if (this.next.is(Token.Type.NEWLINE)) {
+                this.line++;
+                this.column = 0;
             }
-            if (c == '\n' || c == '\r' || c == ' ' || c == '\t') {
-                if (scanned.toString().equals("")) {
+            Token current = this.next;
+            this.next = null;
+            return current;
+        }
+
+        while ((i = this.source.read()) != -1) {
+            char c = (char) i;
+            this.column++;
+            if (c == '\n' || c == '\t' || c == '\r' || c == ' ') {
+                if (scanned.length() == 0) {
+                    if (c == '\n') {
+                        return token(Token.Type.NEWLINE, "\\n");
+                    }
                     continue;
                 } else {
-                    return evaluate(scanned.toString());
-                }
-            } else {
-                scanned.append(c);
-                if (reserved.containsKey(scanned.toString())) {
+                    if (c == '\n') {
+                        this.next = token(Token.Type.NEWLINE, "\\n");
+                    }
                     return evaluate(scanned.toString());
                 }
             }
+            scanned.append(c);
+            if (this.reserved.containsKey(scanned.toString())) {
+                return evaluate(scanned.toString());
+            }
         }
-        return new EOF();
+
+        return token(Token.Type.EOF, "EOF");
+    }
+
+    private Token token(Token.Type type, String sourceRep) {
+        return new Token(type, sourceRep).found(this.line, this.column);
     }
 
     private Token evaluate(String scanned) {
-        if (reserved.containsKey(scanned.toString())) {
-            return reserved.get(scanned.toString());
+        if (this.reserved.containsKey(scanned)) {
+            return this.reserved.get(scanned).found(this.line, this.column);
         } else {
-            return new Text(scanned);
+            return token(Token.Type.REGULAR, scanned);
         }
     }
+
 }
