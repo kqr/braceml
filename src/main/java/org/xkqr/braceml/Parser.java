@@ -1,8 +1,13 @@
 package org.xkqr.braceml;
 
+import org.xkqr.braceml.tokenstream.TokenStream;
+import org.xkqr.braceml.tokenstream.LexingError;
+import org.xkqr.braceml.documentbuilder.DocumentBuilder;
+
+
 public class Parser<Format> {
 
-    public Parser(TokenStream lexer, Document<Format> document) {
+    public Parser(TokenStream lexer, DocumentBuilder<Format> document) {
         this.lexer = lexer;
         this.document = document;
     }
@@ -17,9 +22,9 @@ public class Parser<Format> {
     }
 
     private TokenStream lexer;
-    private Document<Format> document;
+    private DocumentBuilder<Format> document;
 
-    private Token document(Document into)
+    private Token document(DocumentBuilder<Format> into)
     throws LexingError, ParseError {
         Token current = lexer.next();
         while ((current = block(current, into)) == null) {
@@ -28,7 +33,7 @@ public class Parser<Format> {
         return current;
     }
 
-    private Token block(Token current, Document into)
+    private Token block(Token current, DocumentBuilder<Format> into)
     throws LexingError, ParseError {
         Token leftover;
         switch (current.type()) {
@@ -63,7 +68,7 @@ public class Parser<Format> {
         }
     }
 
-    private Token paragraph(Document into)
+    private Token paragraph(DocumentBuilder<Format> into)
     throws LexingError, ParseError {
         Token leftover = inline(into);
         if (leftover.type() == Token.Type.PARABREAK) {
@@ -73,7 +78,7 @@ public class Parser<Format> {
         }
     }
 
-    private Token inline(Document into)
+    private Token inline(DocumentBuilder<Format> into)
     throws LexingError, ParseError {
         Token current = lexer.next();
         while ((current = line(current, into)) == null) {
@@ -82,7 +87,7 @@ public class Parser<Format> {
         return current;
     }
 
-    private Token line(Token current, Document into)
+    private Token line(Token current, DocumentBuilder<Format> into)
     throws LexingError, ParseError {
         Token leftover;
         switch (current.type()) {

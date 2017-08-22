@@ -1,4 +1,4 @@
-package org.xkqr.braceml;
+package org.xkqr.braceml.tokenstream;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.xkqr.braceml.Token;
 
 public class Lexer implements TokenStream, AutoCloseable {
     private Reader source;

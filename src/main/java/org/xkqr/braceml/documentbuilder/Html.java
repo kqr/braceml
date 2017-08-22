@@ -1,9 +1,10 @@
-package org.xkqr.braceml;
+package org.xkqr.braceml.documentbuilder;
 
 import java.io.IOException;
 
+import org.xkqr.util.LazyStringBuilder;
 
-public class Html implements Document<LazyStringBuilder> {
+public class Html implements DocumentBuilder<LazyStringBuilder> {
 
     public Html() {
         this.content = new LazyStringBuilder();

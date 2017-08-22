@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.xkqr.braceml.tokenstream.Lexer;
+import org.xkqr.braceml.tokenstream.LexingError;
+import org.xkqr.braceml.documentbuilder.Html;
+import org.xkqr.util.LazyStringBuilder;
 
 public class BraceML {
 
@@ -19,20 +23,6 @@ public class BraceML {
         Reader source = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]))));
         Parser<LazyStringBuilder> parser = new Parser<>(new Lexer(source), new Html());
         System.out.println(parser.parse());
-    }
-
-
-    private void lexerdump(Reader source)
-    throws IOException, LexingError {
-        Lexer lexer = new Lexer(source);
-        Token t;
-        while (true) {
-            t = lexer.next();
-            System.out.println(t);
-            if (t.type() == Token.Type.EOF) {
-                break;
-            }
-        }
     }
 
 }

@@ -29,7 +29,7 @@ public class Token {
     private int line = 0;
     private int column = 0;
 
-    Token(Type type, String sourceRep) {
+    public Token(Type type, String sourceRep) {
         this.type = type;
         this.sourceRep = sourceRep;
         this.line = this.line;

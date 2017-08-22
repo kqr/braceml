@@ -1,6 +1,6 @@
-package org.xkqr.braceml;
+package org.xkqr.braceml.tokenstream;
 
-class LexingError extends Exception {
+public class LexingError extends Exception {
     public LexingError(String msg) {
         super(msg);
     }
