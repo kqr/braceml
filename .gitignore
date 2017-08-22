@@ -3,3 +3,4 @@
 infer-out
 /settings.gradle
 *.class
+/build
