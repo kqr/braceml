@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Lexer implements AutoCloseable {
+public class Lexer implements TokenStream, AutoCloseable {
     private Reader source;
     private Token next;
     private int line;
@@ -45,9 +45,13 @@ public class Lexer implements AutoCloseable {
         this.column = 0;
     }
 
-    public Token next() throws IOException {
+    public Token next() throws LexingError {
         if (this.next == null) {
-            return fetch();
+            try {
+                return fetch();
+            } catch (IOException e) {
+                throw new LexingError(e);
+            }
         }
 
         Token current = this.next;
@@ -56,7 +60,11 @@ public class Lexer implements AutoCloseable {
         if (current.type() == Token.Type.NEWLINE) {
             this.line++;
             this.column = 0;
-            this.next = fetch();
+            try {
+                this.next = fetch();
+            } catch (IOException e) {
+                throw new LexingError(e);
+            }
             if (this.next.type() == Token.Type.NEWLINE) {
                 current = token(Token.Type.PARABREAK, "\\n\\n");
             }

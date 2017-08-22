@@ -14,14 +14,16 @@ import java.util.Map;
 
 public class BraceML {
 
-    public static void main(String[] args) throws IOException, ParseError {
+    public static void main(String[] args)
+    throws IOException, LexingError, ParseError {
         Reader source = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]))));
-        Parser<LazyStringBuilder> parse = new Parser(new Lexer(source), new Html());
-        parse.document();
-        System.out.println(html.render());
+        Parser<LazyStringBuilder> parser = new Parser<>(new Lexer(source), new Html());
+        System.out.println(parser.parse());
     }
 
-    public void lexerdump(Reader source) {
+
+    private void lexerdump(Reader source)
+    throws IOException, LexingError {
         Lexer lexer = new Lexer(source);
         Token t;
         while (true) {

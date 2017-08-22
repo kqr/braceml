@@ -3,9 +3,11 @@ JC = javac
 JAVA = java
 BUILDDIR = build
 
+JCFLAGS=
+
 SRC = $(shell find src -name '*.java' | tr '\n' ' ')
 MAIN = 'org.xkqr.braceml.BraceML'
-ARGV = ''
+ARGV=
 
 all: prebuild braceml
 
@@ -15,7 +17,7 @@ prebuild:
 
 braceml:
 	@echo 'Compiling Java code'
-	$(JC) -d $(BUILDDIR) $(SRC)
+	$(JC) -d $(BUILDDIR) $(JCFLAGS) $(SRC)
 
 run: all
 	@echo 'Running compiled classes'
@@ -24,6 +26,5 @@ run: all
 clean:
 	@echo 'Removing build directory'
 	rm -rf build
-
 
 .PHONY: all clean prebuild run

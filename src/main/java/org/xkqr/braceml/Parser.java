@@ -1,48 +1,71 @@
 package org.xkqr.braceml;
 
-import java.io.IOException;
+public class Parser<Format> {
 
-public class Parser<Output> {
-
-    private Lexer lexer;
-    private Renderer<Output> renderer;
-
-    public Parser(Lexer lexer, Renderer<Output> renderer) {
+    public Parser(TokenStream lexer, Document<Format> document) {
         this.lexer = lexer;
-        this.renderer = renderer;
+        this.document = document;
     }
 
-    public Output document() throws IOException, ParseError {
+    public Format parse()
+    throws LexingError, ParseError {
+        Token leftover = document(document);
+        if (leftover.type() != Token.Type.EOF) {
+            throw new ParseError("Unexpected token " + leftover + ". Expected block element.");
+        }
+        return document.build();
+    }
+
+    private TokenStream lexer;
+    private Document<Format> document;
+
+    private Token document(Document into)
+    throws LexingError, ParseError {
         Token current = lexer.next();
-        while ((current = block(current)) == null) {
+        while ((current = block(current, into)) == null) {
             current = lexer.next();
         }
-        if (current.type() != Token.Type.EOF) {
-            throw new ParseError("Unexpected token " + current + ". Expected block element.");
-        }
-        return renderer.render();
+        return current;
     }
 
-    private Token block(Token current) throws IOException, ParseError {
+    private Token block(Token current, Document into)
+    throws LexingError, ParseError {
+        Token leftover;
         switch (current.type()) {
             case H_OPEN:
-                Token leftover = inline(renderer.h());
+                leftover = inline(document.h());
                 expect(Token.Type.H_CLOSE, leftover);
                 return null;
             case HH_OPEN:
+                leftover = inline(document.hh());
+                expect(Token.Type.HH_CLOSE, leftover);
+                return null;
             case HHH_OPEN:
+                leftover = inline(document.hhh());
+                expect(Token.Type.HHH_CLOSE, leftover);
+                return null;
             case ULI_OPEN:
+                leftover = document(document.uli());
+                expect(Token.Type.ULI_CLOSE, leftover);
+                return null;
             case OLI_OPEN:
-            case CODEBLOCK_OPEN:
+                leftover = document(document.oli());
+                expect(Token.Type.OLI_CLOSE, leftover);
+                return null;
             case QUOTE_OPEN:
+                leftover = document(document.quote());
+                expect(Token.Type.QUOTE_CLOSE, leftover);
+                return null;
+            case CODEBLOCK_OPEN:
             case IMG_OPEN:
             default:
-                return paragraph(renderer.paragraph());
+                return paragraph(document.paragraph());
         }
     }
 
-    private Token paragraph(Renderer onto) throws IOException, ParseError {
-        Token leftover = inline(onto);
+    private Token paragraph(Document into)
+    throws LexingError, ParseError {
+        Token leftover = inline(into);
         if (leftover.type() == Token.Type.PARABREAK) {
             return null;
         } else {
@@ -50,48 +73,56 @@ public class Parser<Output> {
         }
     }
 
-    private Token inline(Renderer onto) throws IOException, ParseError {
+    private Token inline(Document into)
+    throws LexingError, ParseError {
         Token current = lexer.next();
-        while ((current = line(current, onto)) == null) {
+        while ((current = line(current, into)) == null) {
             current = lexer.next();
         }
         return current;
     }
 
-    private Token line(Token current, Renderer onto) throws IOException, ParseError {
+    private Token line(Token current, Document into)
+    throws LexingError, ParseError {
+        Token leftover;
         switch (current.type()) {
             case EMPH_OPEN:
-                Token leftover = inline(onto.emph());
+                leftover = inline(into.emph());
                 expect(Token.Type.EMPH_CLOSE, leftover);
                 return null;
             case STRONG_OPEN:
+                leftover = inline(into.strong());
+                expect(Token.Type.STRONG_CLOSE, leftover);
+                return null;
             case ABBR_OPEN:
+                leftover = inline(into.abbr());
+                expect(Token.Type.ABBR_CLOSE, leftover);
+                return null;
             case DFN_OPEN:
+                leftover = inline(into.dfn());
+                expect(Token.Type.DFN_CLOSE, leftover);
+                return null;
             case CODE_OPEN:
             case FN_OPEN:
+                leftover = document(into.footnote());
+                expect(Token.Type.FN_CLOSE, leftover);
+                return null;
             case HREF_OPEN:
             case REGULAR:
-                onto.regular(" ");
-                onto.regular(current.sourceRep());
-                onto.regular(" ");
+                into.regular(" ");
+                into.regular(current.sourceRep());
+                into.regular(" ");
                 return null;
             case NEWLINE:
-                onto.regular("\n");
+                into.regular("\n");
                 return null;
             default:
                 return current;
         }
     }
     
-    private Token ignore(Token.Type type) throws IOException, ParseError {
-        Token current = lexer.next();
-        if (current.type() == Token.Type.NEWLINE) {
-            current = lexer.next();
-        }
-        return current;
-    }
-
-    private void expect(Token.Type type, Token token) throws ParseError {
+    private void expect(Token.Type type, Token token)
+    throws ParseError {
         if (token.type() == type) {
             return;
         } else {

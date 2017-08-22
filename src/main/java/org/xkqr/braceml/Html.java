@@ -3,7 +3,7 @@ package org.xkqr.braceml;
 import java.io.IOException;
 
 
-public class Html implements Renderer<LazyStringBuilder> {
+public class Html implements Document<LazyStringBuilder> {
 
     public Html() {
         this.content = new LazyStringBuilder();
@@ -11,45 +11,50 @@ public class Html implements Renderer<LazyStringBuilder> {
         this.currentOpenList = OpenList.NONE;
     }
 
-    public LazyStringBuilder render() {
+    // TODO: make it possible to "stream render", i.e. some sort of
+    // functionality where once all child renderers are rendered,
+    // the parent automatically renders? but well designed, and not
+    // dumb like that idea...
+
+    public LazyStringBuilder build() {
         this.close(currentOpenList);
         return this.content.append(footer);
     }
 
-    public Renderer<LazyStringBuilder> h() {
+    public Html h() {
         return node("h1");
     }
-    public Renderer<LazyStringBuilder> hh() {
+    public Html hh() {
         return node("h1");
     }
-    public Renderer<LazyStringBuilder> hhh() {
+    public Html hhh() {
         return node("h3");
     }
-    public Renderer<LazyStringBuilder> uli() {
+    public Html uli() {
         return li(OpenList.UL);
     }
-    public Renderer<LazyStringBuilder> oli() {
+    public Html oli() {
         return li(OpenList.OL);
     }
-    public Renderer<LazyStringBuilder> quote() {
+    public Html quote() {
         return node("blockquote");
     }
-    public Renderer<LazyStringBuilder> paragraph() {
+    public Html paragraph() {
         return node("p");
     }
-    public Renderer<LazyStringBuilder> emph() {
+    public Html emph() {
         return node("em");
     }
-    public Renderer<LazyStringBuilder> strong() {
+    public Html strong() {
         return node("strong");
     }
-    public Renderer<LazyStringBuilder> abbr() {
+    public Html abbr() {
         return node("abbr");
     }
-    public Renderer<LazyStringBuilder> dfn() {
+    public Html dfn() {
         return node("dfn");
     }
-    public Renderer<LazyStringBuilder> footnote() {
+    public Html footnote() {
         // TODO: implement
         // 1. sequencing for anchors
         // 2. make anchor to here
@@ -62,7 +67,7 @@ public class Html implements Renderer<LazyStringBuilder> {
         return this;
     }
 
-    public Renderer<LazyStringBuilder> href(String url) {
+    public Html href(String url) {
         this.close(currentOpenList);
         LazyStringBuilder contents = new LazyStringBuilder();
         this.content.append("<a href=\"" + url + "\">")
@@ -74,11 +79,11 @@ public class Html implements Renderer<LazyStringBuilder> {
     public void image(String alttext, String url) {
     }
     public void codeblock(String verbatim) {
-        Renderer<LazyStringBuilder> renderer = node("pre");
+        Html renderer = node("pre");
         renderer.code(verbatim);
     }
     public void code(String verbatim) {
-        Renderer<LazyStringBuilder> renderer = node("code");
+        Html renderer = node("code");
         renderer.regular(verbatim);
     }
     public void regular(String verbatim) {
@@ -103,16 +108,16 @@ public class Html implements Renderer<LazyStringBuilder> {
         this.currentOpenList = OpenList.NONE;
     }
 
-    private Renderer<LazyStringBuilder> li(OpenList type) {
+    private Html li(OpenList type) {
         this.open(type);
         return node("li");
     }
 
-    private Renderer<LazyStringBuilder> node(String name) {
+    private Html node(String name) {
         return node(name, this.content);
     }
 
-    private Renderer<LazyStringBuilder> node(String name, LazyStringBuilder into) {
+    private Html node(String name, LazyStringBuilder into) {
         this.close(currentOpenList);
         LazyStringBuilder contents = new LazyStringBuilder();
         into.append("<" + name + ">")
