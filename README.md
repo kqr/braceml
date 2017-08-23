@@ -45,13 +45,6 @@ Todo
 * Strong
 * Abbreviation
 * Definition
-
-
-### Concepts handled by everything but lexer
-
-
-### Concepts handled by parser only
-
 * Footnote
 
 
@@ -65,6 +58,12 @@ Todo
 ### Concepts that aren't supported anywhere yet
 
 * Images
+
+
+### Concepts that don't even have syntax
+
+* sup and sub (are these really necessary?)
+* hr
 
 
 Possibilities
