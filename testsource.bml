@@ -1,6 +1,6 @@
 {. rubrik .}
 
 testar {/ en /} källkodsfil
-med text på flera rader
+med {= text =} på flera rader {^ och en fotnot ^} mitt i stycket
 
 och ännu ett stycke :O

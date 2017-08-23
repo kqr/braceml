@@ -7,9 +7,7 @@ import org.xkqr.util.LazyStringBuilder;
 public class Html implements DocumentBuilder<LazyStringBuilder> {
 
     public Html() {
-        this.content = new LazyStringBuilder();
-        this.footer = new LazyStringBuilder();
-        this.currentOpenList = OpenList.NONE;
+        this(null, new LazyStringBuilder());
     }
 
     // TODO: make it possible to "stream render", i.e. some sort of
@@ -19,17 +17,26 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
 
     public LazyStringBuilder build() {
         this.close(currentOpenList);
-        return this.content.append(footer);
+
+        LazyStringBuilder rendered = new LazyStringBuilder();
+        rendered.append(this.content);
+        if (footer().length() > 0) {
+            rendered.append("\n\n")
+                .append("<footer>\n")
+                .append(footer())
+                .append("</footer>\n");
+        }
+        return rendered;
     }
 
     public Html h() {
-        return node("h1");
+        return heading(1);
     }
     public Html hh() {
-        return node("h1");
+        return heading(2);
     }
     public Html hhh() {
-        return node("h3");
+        return heading(3);
     }
     public Html uli() {
         return li(OpenList.UL);
@@ -41,7 +48,8 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
         return node("blockquote");
     }
     public Html paragraph() {
-        return node("p");
+        Html n = node("p");
+        return n;
     }
     public Html emph() {
         return node("em");
@@ -56,16 +64,16 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
         return node("dfn");
     }
     public Html footnote() {
-        // TODO: implement
-        // 1. sequencing for anchors
-        // 2. make anchor to here
-        // 3. make note (new Html())
-        // 4. make anchor to note
-        // 5. make ref to note
-        // 6. make backref to here
-        // 7. return note
+        footnotes++;
+        anchor("back-" + footnotes);
+        href("#fn-" + footnotes).regular("[" + footnotes + "]");
 
-        return this;
+        LazyStringBuilder text = new LazyStringBuilder();
+        Html footnote = new Html(this, text);
+        footnote.anchor("fn-" + footnotes);
+        footnote.href("#back-" + footnotes);
+        footer().append(text);
+        return footnote;
     }
 
     public Html href(String url) {
@@ -74,19 +82,22 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
         this.content.append("<a href=\"" + url + "\">")
             .append(contents)
             .append("</a>");
-        return new Html(contents);
+        return new Html(this, contents);
     }
 
     public void image(String alttext, String url) {
     }
+
     public void codeblock(String verbatim) {
         Html renderer = node("pre");
         renderer.code(verbatim);
     }
+
     public void code(String verbatim) {
         Html renderer = node("code");
         renderer.regular(verbatim);
     }
+
     public void regular(String verbatim) {
         this.close(currentOpenList);
         // TODO: ESCAPE &<> CHARACTERS!!!
@@ -98,20 +109,48 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
     
     private enum OpenList {UL, OL, NONE};
 
+    private Html parent;
     private LazyStringBuilder content;
     private LazyStringBuilder footer;
     private OpenList currentOpenList;
+    private int footnotes;
+    private int sections;
 
     private Html(LazyStringBuilder content) {
-        // TODO: call the other constructor?
+        this(null, content);
+    }
+
+    private Html(Html parent, LazyStringBuilder content) {
+        this.parent = parent;
         this.content = content;
         this.footer = new LazyStringBuilder();
         this.currentOpenList = OpenList.NONE;
+        this.footnotes = 0;
+        this.sections = 0;
+    }
+
+    private LazyStringBuilder footer() {
+        Html root;
+        for (root = this; root.parent != null; root = root.parent);
+        return root.footer;
+    }
+
+    private void anchor(String name) {
+        this.content.append("<a id=\"" + name + "\">").append("</a>");
     }
 
     private Html li(OpenList type) {
         this.open(type);
         return node("li");
+    }
+
+    private Html heading(int level) {
+        sections++;
+        this.content.append("\n\n");
+        anchor("s-" + sections);
+        Html inline = node("h" + level);
+        this.content.append("\n");
+        return inline;
     }
 
     private Html node(String name) {
@@ -124,9 +163,9 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
         into.append("<" + name + ">")
             .append(contents)
             .append("</" + name + ">");
-        return new Html(contents);
+        return new Html(this, contents);
     }
-    
+
     private void close(OpenList type) {
         switch (type) {
         case NONE:

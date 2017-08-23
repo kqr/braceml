@@ -13,7 +13,7 @@ public class Token {
         /* Inline tag tokens */
         EMPH_OPEN, EMPH_CLOSE, STRONG_OPEN, STRONG_CLOSE,
         ABBR_OPEN, ABBR_CLOSE, DFN_OPEN, DFN_CLOSE,
-        CODE_OPEN, CODE_CLOSE, FN_OPEN, FN_CLOSE,
+        CODE_OPEN, CODE_CLOSE, FOOTNOTE_OPEN, FOOTNOTE_CLOSE,
         HREF_OPEN, HREF_CLOSE,
 
         /* Block tag tokens */

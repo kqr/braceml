@@ -37,10 +37,6 @@ Todo
 * Paragraphs
 * Emphasis
 * Regular text
-
-
-### Concepts handled by everything but lexer
-
 * Heading 2
 * Heading 3
 * ULI
@@ -49,6 +45,9 @@ Todo
 * Strong
 * Abbreviation
 * Definition
+
+
+### Concepts handled by everything but lexer
 
 
 ### Concepts handled by parser only
@@ -66,6 +65,17 @@ Todo
 ### Concepts that aren't supported anywhere yet
 
 * Images
+
+
+Possibilities
+-------------
+
+This way of dealing with writing blog posts opens up a lot of possibilities
+that were previously unaccessible to me. Here are some:
+
+* Anchors on every heading
+* Table of contents
+* Hovering over a footnote reveals it without a click?
 
 
 Specification

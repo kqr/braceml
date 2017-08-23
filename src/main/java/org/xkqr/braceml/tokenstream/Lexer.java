@@ -42,6 +42,14 @@ public class Lexer implements TokenStream, AutoCloseable {
         predef.add(new Token(Token.Type.QUOTE_CLOSE, "\"}"));
         predef.add(new Token(Token.Type.EMPH_OPEN, "{/"));
         predef.add(new Token(Token.Type.EMPH_CLOSE, "/}"));
+        predef.add(new Token(Token.Type.STRONG_OPEN, "{**"));
+        predef.add(new Token(Token.Type.STRONG_CLOSE, "**}"));
+        predef.add(new Token(Token.Type.ABBR_OPEN, "{["));
+        predef.add(new Token(Token.Type.ABBR_CLOSE, "]}"));
+        predef.add(new Token(Token.Type.DFN_OPEN, "{="));
+        predef.add(new Token(Token.Type.DFN_CLOSE, "=}"));
+        predef.add(new Token(Token.Type.FOOTNOTE_OPEN, "{^"));
+        predef.add(new Token(Token.Type.FOOTNOTE_CLOSE, "^}"));
 
         this.reserved = new HashMap<String, Token>();
         for (Token token : predef) {

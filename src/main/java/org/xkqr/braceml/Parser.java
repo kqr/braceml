@@ -38,33 +38,33 @@ public class Parser<Format> {
         Token leftover;
         switch (current.type()) {
             case H_OPEN:
-                leftover = inline(document.h());
+                leftover = inline(into.h());
                 expect(Token.Type.H_CLOSE, leftover);
                 return null;
             case HH_OPEN:
-                leftover = inline(document.hh());
+                leftover = inline(into.hh());
                 expect(Token.Type.HH_CLOSE, leftover);
                 return null;
             case HHH_OPEN:
-                leftover = inline(document.hhh());
+                leftover = inline(into.hhh());
                 expect(Token.Type.HHH_CLOSE, leftover);
                 return null;
             case ULI_OPEN:
-                leftover = document(document.uli());
+                leftover = document(into.uli());
                 expect(Token.Type.ULI_CLOSE, leftover);
                 return null;
             case OLI_OPEN:
-                leftover = document(document.oli());
+                leftover = document(into.oli());
                 expect(Token.Type.OLI_CLOSE, leftover);
                 return null;
             case QUOTE_OPEN:
-                leftover = document(document.quote());
+                leftover = document(into.quote());
                 expect(Token.Type.QUOTE_CLOSE, leftover);
                 return null;
             case CODEBLOCK_OPEN:
             case IMG_OPEN:
             default:
-                return paragraph(document.paragraph());
+                return paragraph(into.paragraph());
         }
     }
 
@@ -107,11 +107,11 @@ public class Parser<Format> {
                 leftover = inline(into.dfn());
                 expect(Token.Type.DFN_CLOSE, leftover);
                 return null;
-            case CODE_OPEN:
-            case FN_OPEN:
+            case FOOTNOTE_OPEN:
                 leftover = document(into.footnote());
-                expect(Token.Type.FN_CLOSE, leftover);
+                expect(Token.Type.FOOTNOTE_CLOSE, leftover);
                 return null;
+            case CODE_OPEN:
             case HREF_OPEN:
             case REGULAR:
                 into.regular(" ");
