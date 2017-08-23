@@ -27,32 +27,8 @@ public class Lexer implements TokenStream, AutoCloseable {
         this.line = 1;
         this.column = 0;
 
-        List<Token> predef = new ArrayList<Token>();
-        predef.add(new Token(Token.Type.H_OPEN, "{."));
-        predef.add(new Token(Token.Type.H_CLOSE, ".}"));
-        predef.add(new Token(Token.Type.HH_OPEN, "{.."));
-        predef.add(new Token(Token.Type.HH_CLOSE, "..}"));
-        predef.add(new Token(Token.Type.HHH_OPEN, "{..."));
-        predef.add(new Token(Token.Type.HHH_CLOSE, "...}"));
-        predef.add(new Token(Token.Type.ULI_OPEN, "{-"));
-        predef.add(new Token(Token.Type.ULI_CLOSE, "-}"));
-        predef.add(new Token(Token.Type.OLI_OPEN, "{#"));
-        predef.add(new Token(Token.Type.OLI_CLOSE, "#}"));
-        predef.add(new Token(Token.Type.QUOTE_OPEN, "{\""));
-        predef.add(new Token(Token.Type.QUOTE_CLOSE, "\"}"));
-        predef.add(new Token(Token.Type.EMPH_OPEN, "{/"));
-        predef.add(new Token(Token.Type.EMPH_CLOSE, "/}"));
-        predef.add(new Token(Token.Type.STRONG_OPEN, "{**"));
-        predef.add(new Token(Token.Type.STRONG_CLOSE, "**}"));
-        predef.add(new Token(Token.Type.ABBR_OPEN, "{["));
-        predef.add(new Token(Token.Type.ABBR_CLOSE, "]}"));
-        predef.add(new Token(Token.Type.DFN_OPEN, "{="));
-        predef.add(new Token(Token.Type.DFN_CLOSE, "=}"));
-        predef.add(new Token(Token.Type.FOOTNOTE_OPEN, "{^"));
-        predef.add(new Token(Token.Type.FOOTNOTE_CLOSE, "^}"));
-
         this.reserved = new HashMap<String, Token>();
-        for (Token token : predef) {
+        for (Token token : Token.syntax()) {
             this.reserved.put(token.sourceRep(), token);
         }
     }
@@ -66,30 +42,68 @@ public class Lexer implements TokenStream, AutoCloseable {
     }
 
     public Token next() throws LexingError {
-        if (this.next == null) {
+        Token current;
+        if (this.next != null) {
+            /* If we have a token buffered, use that */
+            current = this.next;
+            this.next = null;
+        } else {
+            /* If we have no token buffered, get a new one */
             try {
-                return fetch();
+                current = fetch();
             } catch (IOException e) {
                 throw new LexingError(e);
             }
         }
 
-        Token current = this.next;
-        this.next = null;
 
         if (current.type() == Token.Type.NEWLINE) {
+            /* If the current token is a newline, increase counters */
             this.line++;
             this.column = 0;
+
+            /* Get one more non-whitespace token, just to see what it is */
+            Token following;
             try {
-                this.next = fetch();
+                while ((following = fetch()).type() == Token.Type.WHITESPACE);
             } catch (IOException e) {
                 throw new LexingError(e);
             }
-            if (this.next.type() == Token.Type.NEWLINE) {
-                current = token(Token.Type.PARABREAK, "\\n\\n");
+            if (following.type() == Token.Type.NEWLINE) {
+                /*
+                 * If the last two non-whitespace tokens both have been
+                 * newlines, chuck them out and replace them with a parabreak
+                 *
+                 */
+                current = token(Token.Type.PARABREAK, "\n\n");
+
+            } else if (this.next != null) {
+                // TODO: We are in a weird situation where "current" refers
+                // to a newline, "following" refers to a non-syntax token,
+                // and "this.next" refers to something follwing that.
+                //
+                // Since I don't have a good solution, I'm going to smash
+                // together the sourcerep for "current" and "following" and
+                // pretend that counts as "current".
+                //
+                // This breaks any grammar that depends on detecting a
+                // leading newline following a non-syntax token, but that
+                // should hopefully not be a problem. It is a better
+                // solution than smashing together "following" and
+                // "this.next" because that may lead to failures in
+                // detecting paragraph breaks.
+
+                current = token(
+                    following.type(),
+                    current.sourceRep() + following.sourceRep()
+                );
+
+            } else {
+                this.next = following;
             }
         }
 
+        System.out.println("[LEXER] " + current);
         return current;
     }
 
@@ -100,36 +114,44 @@ public class Lexer implements TokenStream, AutoCloseable {
         while ((i = this.source.read()) != -1) {
             char c = (char) i;
             this.column++;
-            if (c == '\n' || c == '\t' || c == '\r' || c == ' ') {
-                if (scanned.length() == 0) {
-                    if (c == '\n') {
-                        return token(Token.Type.NEWLINE, "\\n");
-                    }
-                    continue;
-                } else {
-                    if (c == '\n') {
-                        this.next = token(Token.Type.NEWLINE, "\\n");
-                    }
-                    return evaluate(scanned.toString());
-                }
+
+            Token delimiter = null;
+            if (c == '\n') {
+                delimiter = token(Token.Type.NEWLINE, "\n");
+            } else if (c == '\t' || c == '\r' || c == ' ') {
+                delimiter = token(Token.Type.WHITESPACE, "" + c);
+            } else {
+                scanned.append(c);
             }
 
-            scanned.append(c);
-            if (this.reserved.containsKey(scanned.toString())) {
+            if (reserved(scanned.toString())) {
                 return evaluate(scanned.toString());
+            } else if (delimiter != null) {
+                if (scanned.length() == 0) {
+                    return delimiter;
+                } else {
+                    this.next = delimiter;
+                    return evaluate(scanned.toString());
+                }
             }
         }
 
         return token(Token.Type.EOF, "EOF");
     }
 
+    private boolean reserved(String scanned) {
+        return this.reserved.containsKey(scanned.toString());
+    }
+
     private Token token(Token.Type type, String sourceRep) {
-        return new Token(type, sourceRep).found(this.line, this.column);
+        return new Token(type, sourceRep)
+            .found("input", this.line, this.column);
     }
 
     private Token evaluate(String scanned) {
         if (this.reserved.containsKey(scanned)) {
-            return this.reserved.get(scanned).found(this.line, this.column);
+            return this.reserved.get(scanned)
+                .found("input", this.line, this.column);
         } else {
             return token(Token.Type.REGULAR, scanned);
         }

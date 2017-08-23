@@ -1,6 +1,8 @@
 {. rubrik .}
 
 testar {/ en /} källkodsfil
-med {= text =} på flera rader {^ och en fotnot ^} mitt i stycket
 
-och ännu ett stycke :O
+med en del {= text =} på flera rader {^ och en fotnot ^} mitt i stycket
+och direkt nu
+
+och ännu ett stycke hehe

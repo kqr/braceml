@@ -146,10 +146,8 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
 
     private Html heading(int level) {
         sections++;
-        this.content.append("\n\n");
         anchor("s-" + sections);
         Html inline = node("h" + level);
-        this.content.append("\n");
         return inline;
     }
 

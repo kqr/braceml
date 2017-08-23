@@ -37,6 +37,10 @@ public class Parser<Format> {
     throws LexingError, ParseError {
         Token leftover;
         switch (current.type()) {
+            case NEWLINE:
+            case WHITESPACE:
+            case PARABREAK:
+                return null;
             case H_OPEN:
                 leftover = inline(into.h());
                 expect(Token.Type.H_CLOSE, leftover);
@@ -61,16 +65,16 @@ public class Parser<Format> {
                 leftover = document(into.quote());
                 expect(Token.Type.QUOTE_CLOSE, leftover);
                 return null;
-            case CODEBLOCK_OPEN:
             case IMG_OPEN:
             default:
-                return paragraph(into.paragraph());
+                into.regular("\n\n");
+                return paragraph(current, into.paragraph());
         }
     }
 
-    private Token paragraph(DocumentBuilder<Format> into)
+    private Token paragraph(Token current, DocumentBuilder<Format> into)
     throws LexingError, ParseError {
-        Token leftover = inline(into);
+        Token leftover = inline(current, into);
         if (leftover.type() == Token.Type.PARABREAK) {
             return null;
         } else {
@@ -80,7 +84,11 @@ public class Parser<Format> {
 
     private Token inline(DocumentBuilder<Format> into)
     throws LexingError, ParseError {
-        Token current = lexer.next();
+        return inline(lexer.next(), into);
+    }
+
+    private Token inline(Token current, DocumentBuilder<Format> into)
+    throws LexingError, ParseError {
         while ((current = line(current, into)) == null) {
             current = lexer.next();
         }
@@ -113,13 +121,10 @@ public class Parser<Format> {
                 return null;
             case CODE_OPEN:
             case HREF_OPEN:
-            case REGULAR:
-                into.regular(" ");
-                into.regular(current.sourceRep());
-                into.regular(" ");
-                return null;
             case NEWLINE:
-                into.regular("\n");
+            case WHITESPACE:
+            case REGULAR:
+                into.regular(current.sourceRep());
                 return null;
             default:
                 return current;
