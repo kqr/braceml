@@ -9,55 +9,16 @@ is quite good enough.
 Todo
 ----
 
-1. Finish lexer
-
-    1. [CHECK] Add all token types
-    2. [CHECK] Complete implementation of more complex tokens
-    3. [WIP] Create map of "reserved keywords"
-
-2. Create parser
-
-    1. [WIP] Recursive descent based on specification below.
-    2. [WIP] Make calls to renderer.
-    3. [ ] Escape HTML
-
-3. Finish plumbing
-
-    1. [ ] Read from stdin, barf rendered to stdout?
-
-4. Document
-
-    1. [ ] Write comments
-    2. [ ] Make tests
-    3. [ ] Blog articles?
+* Should it be unixy and read from stdin and barf rendered to stdout? Or work on file paths?
+* Comments!
+* Tests!
+* Blogs
 
 
-### Concepts completely handled
+### Concepts that aren't supported yet
 
-* Heading 1
-* Paragraphs
-* Emphasis
-* Regular text
-* Heading 2
-* Heading 3
-* ULI
-* OLI
-* Blockquote
-* Strong
-* Abbreviation
-* Definition
-* Footnote
-* Href
-* Code block
-* Inline code
-* hr
-
-
-### Concepts that aren't supported anywhere yet
-
-* Images (suggested syntax: {! inline alt-text | url !} )
+* Images: trivial (suggested syntax: {! inline alt-text | url !} )
 * sup and sub (are these really necessary?)
-
 
 
 Possibilities
