@@ -22,6 +22,8 @@ public class Parser<Format> {
         return document.build();
     }
 
+    /* PRIVATE */
+
     private TokenStream lexer;
     private DocumentBuilder<Format> document;
 

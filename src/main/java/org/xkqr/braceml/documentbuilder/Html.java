@@ -39,6 +39,7 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
         return heading(3);
     }
     public Html hr() {
+        this.close(currentOpenList);
         this.content.append("\n");
         this.content.append("<hr />");
         this.content.append("\n");
@@ -51,10 +52,12 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
         return li(OpenList.OL);
     }
     public Html quote() {
+        this.close(currentOpenList);
         this.content.append("\n");
         return node("blockquote");
     }
     public Html paragraph() {
+        this.close(currentOpenList);
         this.content.append("\n");
         return node("p");
     }
@@ -99,6 +102,7 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
     }
 
     public void codeblock(CharSequence verbatim) {
+        this.close(currentOpenList);
         this.content.append("\n");
         Html renderer = node("pre");
         renderer.code(verbatim);
@@ -113,7 +117,10 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
     public void regular(CharSequence verbatim) {
         this.close(currentOpenList);
         // TODO: ESCAPE &<> CHARACTERS!!!
-        this.content.append(verbatim);
+        this.content.append(verbatim.toString()
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;"));
     }
 
     /*================ PRIVATE ================*/
@@ -158,6 +165,7 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
     }
 
     private Html heading(int level) {
+        this.close(currentOpenList);
         sections++;
         this.content.append("\n");
         this.content.append("\n");
@@ -172,7 +180,6 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
     }
 
     private Html node(String name, LazyStringBuilder into) {
-        this.close(currentOpenList);
         LazyStringBuilder contents = new LazyStringBuilder();
         into.append("<" + name + ">")
             .append(contents)
@@ -197,7 +204,9 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
     }
 
     private void open(OpenList type) {
-        if (currentOpenList != OpenList.NONE && currentOpenList != type) {
+        if (currentOpenList == type) {
+            return;
+        } else if (currentOpenList != OpenList.NONE) {
             close(currentOpenList);
         }
         switch (type) {

@@ -1,12 +1,7 @@
-detta är
+{#
+en lista
 
-{{
+flera stycken
 
-    kod-block
-}}
-
-som vi provar med {{ inline-kod }} också
-
-{_ hr eller? _}
-
-samt en {@ href | www.sunet.se @} för att se
+{- varav ett ännu en lista! -}
+#}

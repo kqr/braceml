@@ -1,0 +1,4 @@
+{. BraceML Syntax .}
+
+Hey! This is a quick guide to the {= BraceML =} syntax. What you just saw
+corresponds to an HTML <dfn> element. 
