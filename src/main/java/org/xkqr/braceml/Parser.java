@@ -3,6 +3,7 @@ package org.xkqr.braceml;
 import org.xkqr.braceml.tokenstream.TokenStream;
 import org.xkqr.braceml.tokenstream.LexingError;
 import org.xkqr.braceml.documentbuilder.DocumentBuilder;
+import org.xkqr.util.LazyStringBuilder;
 
 
 public class Parser<Format> {
@@ -53,6 +54,10 @@ public class Parser<Format> {
                 leftover = inline(into.hhh());
                 expect(Token.Type.HHH_CLOSE, leftover);
                 return null;
+            case HR_OPEN:
+                leftover = inline(into.hr());
+                expect(Token.Type.HR_CLOSE, leftover);
+                return null;
             case ULI_OPEN:
                 leftover = document(into.uli());
                 expect(Token.Type.ULI_CLOSE, leftover);
@@ -65,9 +70,10 @@ public class Parser<Format> {
                 leftover = document(into.quote());
                 expect(Token.Type.QUOTE_CLOSE, leftover);
                 return null;
+            case CODE_OPEN:
+                return code(into, true);
             case IMG_OPEN:
             default:
-                into.regular("\n\n");
                 return paragraph(current, into.paragraph());
         }
     }
@@ -119,8 +125,14 @@ public class Parser<Format> {
                 leftover = document(into.footnote());
                 expect(Token.Type.FOOTNOTE_CLOSE, leftover);
                 return null;
-            case CODE_OPEN:
             case HREF_OPEN:
+                LazyStringBuilder url = new LazyStringBuilder();
+                leftover = inline(into.href(url));
+                expect(Token.Type.PIPE, leftover);
+                verbatim(url, Token.Type.HREF_CLOSE);
+                return null;
+            case CODE_OPEN:
+                return code(into, false);
             case NEWLINE:
             case WHITESPACE:
             case REGULAR:
@@ -129,6 +141,75 @@ public class Parser<Format> {
             default:
                 return current;
         }
+    }
+
+    private Token code(DocumentBuilder<Format> into, boolean block)
+    throws LexingError, ParseError {
+        LazyStringBuilder code = new LazyStringBuilder();
+        if (block) {
+            into.codeblock(code);
+        } else {
+            into.code(code);
+        }
+        Token leftover = verbatim(code, Token.Type.CODE_CLOSE);
+        expect(Token.Type.CODE_CLOSE, leftover);
+        return null;
+    }
+
+    private Token verbatim(LazyStringBuilder text, Token.Type terminator)
+    throws LexingError {
+        StringBuilder whitespace;
+        Token current = lexer.next();
+        
+        /* Ignores any leading empty lines before the content... */
+
+        /* 
+         * This is slightly tricky because if it's an inline thing,
+         * then we _do_ want to ignore leading whitespace on the
+         * the first line, and otherwise we don't.
+         *
+         * This algorithm works by signaling "newline discovered"
+         * through setting whitespace away from null.
+         *
+         */
+        whitespace = null;
+        while (whitespace(current)) {
+            if (newline(current)) {
+                whitespace = new StringBuilder();
+            } else if (whitespace != null) {
+                whitespace.append(current.sourceRep());
+            }
+            current = lexer.next();
+        }
+        /* ...but preserves leading whitespace on the first line of content */
+        if (whitespace != null) {
+            text.append(whitespace);
+        }
+
+        whitespace = new StringBuilder();
+        while (current.type() != terminator) {
+            /* Ignore any trailing whitespace after the last content... */
+            if (whitespace(current)) {
+                whitespace.append(current.sourceRep());
+            } else {
+                /* But preserve any other whitespace */
+                text.append(whitespace);
+                whitespace = new StringBuilder();
+                text.append(current.sourceRep());
+            }
+
+            current = lexer.next();
+        }
+        return current;
+    }
+
+    private boolean newline(Token token) {
+        return token.type() == Token.Type.NEWLINE
+            || token.type() == Token.Type.PARABREAK;
+    }
+
+    private boolean whitespace(Token token) {
+        return newline(token) || token.type() == Token.Type.WHITESPACE;
     }
     
     private void expect(Token.Type type, Token token)

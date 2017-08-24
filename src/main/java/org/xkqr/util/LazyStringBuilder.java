@@ -23,7 +23,14 @@ import java.util.List;
 
 public class LazyStringBuilder implements CharSequence, Appendable {
 
-    private List<CharSequence> sources = new ArrayList<>();
+    public LazyStringBuilder() {
+        sources = new ArrayList<>();
+    }
+
+    public LazyStringBuilder(String contents) {
+        this();
+        this.append(contents);
+    }
 
     @Override
     public LazyStringBuilder append(CharSequence csq) {
@@ -84,5 +91,10 @@ public class LazyStringBuilder implements CharSequence, Appendable {
         }
         return this;
     }
+
+
+    /* PRIVATE */
+
+    private List<CharSequence> sources;
 
 }

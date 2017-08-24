@@ -21,7 +21,8 @@ public class Token {
         /* Block tag tokens */
         H_OPEN, H_CLOSE, HH_OPEN, HH_CLOSE, HHH_OPEN, HHH_CLOSE,
         ULI_OPEN, ULI_CLOSE, OLI_OPEN, OLI_CLOSE,
-        QUOTE_OPEN, QUOTE_CLOSE, IMG_OPEN, IMG_CLOSE;
+        QUOTE_OPEN, QUOTE_CLOSE, IMG_OPEN, IMG_CLOSE,
+        HR_OPEN, HR_CLOSE;
     }
 
     public static List<Token> syntax() {
@@ -53,6 +54,8 @@ public class Token {
         syntax.add(new Token(Type.HREF_CLOSE, "@}"));
         syntax.add(new Token(Type.CODE_OPEN, "{{"));
         syntax.add(new Token(Type.CODE_CLOSE, "}}"));
+        syntax.add(new Token(Type.HR_OPEN, "{_"));
+        syntax.add(new Token(Type.HR_CLOSE, "_}"));
         return syntax;
     }
 

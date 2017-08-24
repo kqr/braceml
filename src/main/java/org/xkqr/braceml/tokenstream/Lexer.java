@@ -15,22 +15,12 @@ import java.util.Map;
 import org.xkqr.braceml.Token;
 
 public class Lexer implements TokenStream, AutoCloseable {
-    private Reader source;
-    private Token next;
-    private int line;
-    private int column;
-    private Map<String, Token> reserved;
 
-    public Lexer(Reader source) throws IOException {
+    public Lexer(String inputname, Reader source)
+    throws IOException {
+        this();
         this.source = source;
-        this.next = null;
-        this.line = 1;
-        this.column = 0;
-
-        this.reserved = new HashMap<String, Token>();
-        for (Token token : Token.syntax()) {
-            this.reserved.put(token.sourceRep(), token);
-        }
+        this.inputname = inputname;
     }
 
     @Override
@@ -44,11 +34,10 @@ public class Lexer implements TokenStream, AutoCloseable {
     public Token next() throws LexingError {
         Token current;
         if (this.next != null) {
-            /* If we have a token buffered, use that */
+            /* We need this one-token buffer to be able to detect parabreaks */
             current = this.next;
             this.next = null;
         } else {
-            /* If we have no token buffered, get a new one */
             try {
                 current = fetch();
             } catch (IOException e) {
@@ -58,46 +47,23 @@ public class Lexer implements TokenStream, AutoCloseable {
 
 
         if (current.type() == Token.Type.NEWLINE) {
-            /* If the current token is a newline, increase counters */
             this.line++;
             this.column = 0;
 
-            /* Get one more non-whitespace token, just to see what it is */
+            /* Get one more token, just to see what it is */
             Token following;
             try {
-                while ((following = fetch()).type() == Token.Type.WHITESPACE);
+                following = fetch();
             } catch (IOException e) {
                 throw new LexingError(e);
             }
             if (following.type() == Token.Type.NEWLINE) {
                 /*
-                 * If the last two non-whitespace tokens both have been
-                 * newlines, chuck them out and replace them with a parabreak
+                 * If the last two tokens both have been newlines,
+                 * chuck them out and replace them with a parabreak
                  *
                  */
                 current = token(Token.Type.PARABREAK, "\n\n");
-
-            } else if (this.next != null) {
-                // TODO: We are in a weird situation where "current" refers
-                // to a newline, "following" refers to a non-syntax token,
-                // and "this.next" refers to something follwing that.
-                //
-                // Since I don't have a good solution, I'm going to smash
-                // together the sourcerep for "current" and "following" and
-                // pretend that counts as "current".
-                //
-                // This breaks any grammar that depends on detecting a
-                // leading newline following a non-syntax token, but that
-                // should hopefully not be a problem. It is a better
-                // solution than smashing together "following" and
-                // "this.next" because that may lead to failures in
-                // detecting paragraph breaks.
-
-                current = token(
-                    following.type(),
-                    current.sourceRep() + following.sourceRep()
-                );
-
             } else {
                 this.next = following;
             }
@@ -107,54 +73,98 @@ public class Lexer implements TokenStream, AutoCloseable {
         return current;
     }
 
+    /* PRIVATE */
+
+    private Reader source;
+    private Token next;
+    private StringBuilder scanned;
+    private String inputname;
+    private int line;
+    private int column;
+    private Map<String, Token> reserved;
+
+    private Lexer() {
+        this.scanned = new StringBuilder();
+        this.next = null;
+        this.line = 1;
+        this.column = 0;
+
+        this.reserved = new HashMap<String, Token>();
+        for (Token token : Token.syntax()) {
+            this.reserved.put(token.sourceRep(), token);
+        }
+        /* Further "reserved" sequences, mainly to simplify implementation */
+        this.reserved.put("\n", token(Token.Type.NEWLINE, "\n"));
+    }
+
     private Token fetch() throws IOException {
-        StringBuilder scanned = new StringBuilder();
         int i;
 
         while ((i = this.source.read()) != -1) {
             char c = (char) i;
-            this.column++;
 
-            Token delimiter = null;
-            if (c == '\n') {
-                delimiter = token(Token.Type.NEWLINE, "\n");
-            } else if (c == '\t' || c == '\r' || c == ' ') {
-                delimiter = token(Token.Type.WHITESPACE, "" + c);
-            } else {
-                scanned.append(c);
+            this.column++;
+            String before = scanned.toString();
+            scanned.append(c);
+            String after = scanned.toString();
+
+            if (reserved(after) != null) {
+                /*
+                 * This character completes a reserved sequence: these
+                 * always take priority, so terminate further processing
+                 * immediately and flush scanned
+                 *
+                 */
+                scanned = new StringBuilder();
+                return evaluate(after);
             }
 
-            if (reserved(scanned.toString())) {
-                return evaluate(scanned.toString());
-            } else if (delimiter != null) {
-                if (scanned.length() == 0) {
-                    return delimiter;
-                } else {
-                    this.next = delimiter;
-                    return evaluate(scanned.toString());
-                }
+            /* Newlines always terminate all tokens */
+            boolean terminates = (c == '\n');
+            /* Non-whitespace always terminates whitespace tokens */
+            terminates = !whitespace(c) && whitespace(before) || terminates;
+            /* Whitespace tokens are terminated by non-whitespace */
+            terminates = whitespace(c) && !whitespace(before) || terminates;
+            /* Don't terminate if there's nothing to terminate */
+            terminates = before.length() > 0 && terminates;
+
+            if (terminates) {
+                scanned = new StringBuilder().append(c);
+                return evaluate(before);
             }
         }
 
         return token(Token.Type.EOF, "EOF");
     }
 
-    private boolean reserved(String scanned) {
-        return this.reserved.containsKey(scanned.toString());
+    private Token evaluate(String scanned) {
+        Token token = reserved(scanned);
+        if (token == null) {
+            if (whitespace(scanned)) {
+                token = token(Token.Type.WHITESPACE, scanned);
+            } else {
+                token = token(Token.Type.REGULAR, scanned);
+            }
+        }
+        return token.found(inputname, this.line, this.column);
+    }
+
+    private Token reserved(String scanned) {
+        return this.reserved.get(scanned);
     }
 
     private Token token(Token.Type type, String sourceRep) {
         return new Token(type, sourceRep)
-            .found("input", this.line, this.column);
+            .found(inputname, this.line, this.column);
     }
 
-    private Token evaluate(String scanned) {
-        if (this.reserved.containsKey(scanned)) {
-            return this.reserved.get(scanned)
-                .found("input", this.line, this.column);
-        } else {
-            return token(Token.Type.REGULAR, scanned);
-        }
+    private boolean whitespace(String scanned) {
+        return scanned.matches("^[\n\r\t ]+$");
     }
+
+    private boolean whitespace(char c) {
+        return c == '\n' || c == '\r' || c == '\t' || c == ' ';
+    }
+
 
 }

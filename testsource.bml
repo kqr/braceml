@@ -1,8 +1,12 @@
-{. rubrik .}
+detta är
 
-testar {/ en /} källkodsfil
+{{
 
-med en del {= text =} på flera rader {^ och en fotnot ^} mitt i stycket
-och direkt nu
+    kod-block
+}}
 
-och ännu ett stycke hehe
+som vi provar med {{ inline-kod }} också
+
+{_ hr eller? _}
+
+samt en {@ href | www.sunet.se @} för att se

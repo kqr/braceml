@@ -11,6 +11,7 @@ public interface DocumentBuilder<Format> {
     public DocumentBuilder<Format> h();
     public DocumentBuilder<Format> hh();
     public DocumentBuilder<Format> hhh();
+    public DocumentBuilder<Format> hr();
     public DocumentBuilder<Format> uli();
     public DocumentBuilder<Format> oli();
     public DocumentBuilder<Format> quote();
@@ -22,12 +23,12 @@ public interface DocumentBuilder<Format> {
     public DocumentBuilder<Format> footnote();
 
     /* The url should not be rendered, but the link description may. */
-    public DocumentBuilder<Format> href(String url);
+    public DocumentBuilder<Format> href(CharSequence url);
 
     /* Verbatim content and regular symbols should not be rendered specially. */
-    public void image(String alttext, String url);
-    public void codeblock(String verbatim);
-    public void code(String verbatim);
-    public void regular(String verbatim);
+    public void image(CharSequence alttext, CharSequence url);
+    public void codeblock(CharSequence verbatim);
+    public void code(CharSequence verbatim);
+    public void regular(CharSequence verbatim);
     
 }

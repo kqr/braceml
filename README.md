@@ -19,6 +19,7 @@ Todo
 
     1. [WIP] Recursive descent based on specification below.
     2. [WIP] Make calls to renderer.
+    3. [ ] Escape HTML
 
 3. Finish plumbing
 
@@ -46,24 +47,17 @@ Todo
 * Abbreviation
 * Definition
 * Footnote
-
-
-### Concepts handled by documentbuilder only
-
 * Href
 * Code block
 * Inline code
+* hr
 
 
 ### Concepts that aren't supported anywhere yet
 
-* Images
-
-
-### Concepts that don't even have syntax
-
+* Images (suggested syntax: {! inline alt-text | url !} )
 * sup and sub (are these really necessary?)
-* hr
+
 
 
 Possibilities
@@ -102,6 +96,7 @@ code gives you accurate results.
     OLI          ::= {# DOCUMENT #}
     CODEBLOCK    ::= {{ NEWLINE VERBATIM }}
     QUOTE        ::= {" DOCUMENT "}
+    HR           ::= {_ INLINE _}
     IMG          ::= {! VERBATIM | HREF !}
   
   

@@ -38,6 +38,12 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
     public Html hhh() {
         return heading(3);
     }
+    public Html hr() {
+        this.content.append("\n");
+        this.content.append("<hr />");
+        this.content.append("\n");
+        return new Html();
+    }
     public Html uli() {
         return li(OpenList.UL);
     }
@@ -45,11 +51,12 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
         return li(OpenList.OL);
     }
     public Html quote() {
+        this.content.append("\n");
         return node("blockquote");
     }
     public Html paragraph() {
-        Html n = node("p");
-        return n;
+        this.content.append("\n");
+        return node("p");
     }
     public Html emph() {
         return node("em");
@@ -66,39 +73,44 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
     public Html footnote() {
         footnotes++;
         anchor("back-" + footnotes);
-        href("#fn-" + footnotes).regular("[" + footnotes + "]");
+        href(new LazyStringBuilder("#fn-" + footnotes))
+            .regular("[" + footnotes + "]");
 
         LazyStringBuilder text = new LazyStringBuilder();
         Html footnote = new Html(this, text);
         footnote.anchor("fn-" + footnotes);
-        footnote.href("#back-" + footnotes);
+        footnote.href(new LazyStringBuilder("#back-" + footnotes));
         footer().append(text);
         return footnote;
     }
 
-    public Html href(String url) {
+    public Html href(CharSequence url) {
         this.close(currentOpenList);
         LazyStringBuilder contents = new LazyStringBuilder();
-        this.content.append("<a href=\"" + url + "\">")
+        this.content.append("<a href=\"")
+            .append(url)
+            .append("\">")
             .append(contents)
             .append("</a>");
         return new Html(this, contents);
     }
 
-    public void image(String alttext, String url) {
+    public void image(CharSequence alttext, CharSequence url) {
     }
 
-    public void codeblock(String verbatim) {
+    public void codeblock(CharSequence verbatim) {
+        this.content.append("\n");
         Html renderer = node("pre");
         renderer.code(verbatim);
+        this.content.append("\n");
     }
 
-    public void code(String verbatim) {
+    public void code(CharSequence verbatim) {
         Html renderer = node("code");
         renderer.regular(verbatim);
     }
 
-    public void regular(String verbatim) {
+    public void regular(CharSequence verbatim) {
         this.close(currentOpenList);
         // TODO: ESCAPE &<> CHARACTERS!!!
         this.content.append(verbatim);
@@ -141,13 +153,17 @@ public class Html implements DocumentBuilder<LazyStringBuilder> {
 
     private Html li(OpenList type) {
         this.open(type);
+        this.content.append("\n");
         return node("li");
     }
 
     private Html heading(int level) {
         sections++;
+        this.content.append("\n");
+        this.content.append("\n");
         anchor("s-" + sections);
         Html inline = node("h" + level);
+        this.content.append("\n");
         return inline;
     }
 
